@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="is-loading">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -359,10 +359,58 @@ footer small{font-size:13px;opacity:.7;display:block;margin-top:8px;}
   *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important;}
 }
 
+/* ---------- PRELOADER ---------- */
+html.is-loading{overflow:hidden;}
+#preloader{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;
+  background:var(--void);
+  transition:opacity .7s var(--ease), visibility .7s var(--ease);
+}
+#preloader.hide{opacity:0;visibility:hidden;pointer-events:none;}
+.pl-icon-wrap{position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center;}
+.pl-ring{
+  position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 0deg,var(--crimson),var(--cyan),#ffe23f,var(--crimson));
+  mask:radial-gradient(circle, transparent 66%, black 67%, black 100%);
+  -webkit-mask:radial-gradient(circle, transparent 66%, black 67%, black 100%);
+  animation:spin 2.4s linear infinite;
+  opacity:.95;
+}
+.pl-icon{
+  position:relative;width:82px;height:82px;border-radius:50%;object-fit:cover;
+  border:1px solid rgba(255,255,255,.15);
+  animation:pl-pop .8s var(--ease) both, pl-pulse 2.6s ease-in-out infinite .8s;
+}
+@keyframes pl-pop{0%{opacity:0;transform:scale(.55);}100%{opacity:1;transform:scale(1);}}
+@keyframes pl-pulse{0%,100%{box-shadow:0 0 22px rgba(224,41,79,.35);}50%{box-shadow:0 0 42px rgba(224,41,79,.6);}}
+.pl-text{
+  font-family:'Space Grotesk',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--ink-soft);opacity:0;animation:pl-fade-in .6s var(--ease) .3s forwards;
+}
+@keyframes pl-fade-in{to{opacity:1;}}
+.pl-bar{width:150px;height:3px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;opacity:0;animation:pl-fade-in .6s var(--ease) .3s forwards;}
+.pl-bar-fill{height:100%;width:36%;border-radius:3px;background:linear-gradient(90deg,var(--crimson),var(--cyan));animation:pl-bar-move 1.15s ease-in-out infinite;}
+@keyframes pl-bar-move{0%{transform:translateX(-120%);}100%{transform:translateX(280%);}}
+
+/* hero staggered entrance after preload */
+.hero-copy, .dial-wrap{opacity:0;transform:translateY(26px);transition:opacity .9s var(--ease), transform .9s var(--ease);}
+html.loaded .hero-copy{transition-delay:.15s;opacity:1;transform:translateY(0);}
+html.loaded .dial-wrap{transition-delay:.35s;opacity:1;transform:translateY(0);}
+
 </style>
 
 </head>
 <body>
+
+<div id="preloader">
+  <div class="pl-icon-wrap">
+    <div class="pl-ring"></div>
+    <img class="pl-icon" src="icon.png" alt="Rose">
+  </div>
+  <span class="pl-text">Rose</span>
+  <div class="pl-bar"><div class="pl-bar-fill"></div></div>
+</div>
 
 <nav id="nav">
   <div class="brand"><img class="brand-icon" src="icon.png" alt="Rose">ROSE</div>
@@ -377,7 +425,7 @@ footer small{font-size:13px;opacity:.7;display:block;margin-top:8px;}
 
 <section class="hero">
   <div class="hero-grid">
-    <div>
+    <div class="hero-copy">
       <span class="eyebrow">● Client-side skin preview</span>
       <h1>Change your look,<br><span class="accent">not the game.</span></h1>
       <p>Rose Skin Changer swaps how champions look on your own screen — a lightweight, local tool built for players who want to preview skins without touching game files.</p>
@@ -510,6 +558,22 @@ footer small{font-size:13px;opacity:.7;display:block;margin-top:8px;}
 </footer>
 
 <script>
+// preloader
+const preloader = document.getElementById('preloader');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MIN_SHOW = reduceMotion ? 0 : 1000; // ms, so the animation is always visible a moment even on fast loads
+const startTime = Date.now();
+window.addEventListener('load', () => {
+  const elapsed = Date.now() - startTime;
+  const wait = Math.max(0, MIN_SHOW - elapsed);
+  setTimeout(() => {
+    preloader.classList.add('hide');
+    document.documentElement.classList.remove('is-loading');
+    document.documentElement.classList.add('loaded');
+    setTimeout(() => preloader.remove(), 800);
+  }, wait);
+});
+
 // nav shadow on scroll
 const nav = document.getElementById('nav');
 window.addEventListener('scroll', () => {
