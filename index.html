@@ -147,6 +147,30 @@ nav.scrolled{background:rgba(8,9,13,.75);border-bottom-color:var(--line);}
 .trust-row span{display:flex;align-items:center;gap:8px;}
 .trust-row b{color:var(--ink);font-weight:600;}
 
+.pw-badge{
+  display:inline-flex;align-items:center;gap:10px;
+  margin-top:18px;padding:9px 16px;border-radius:30px;
+  background:rgba(63,214,255,.06);
+  border:1px solid rgba(63,214,255,.25);
+  font-size:13.5px;color:var(--ink-soft);
+  cursor:pointer;user-select:none;
+  transition:border-color .3s, background .3s, transform .2s;
+  position:relative;
+}
+.pw-badge:hover{border-color:rgba(63,214,255,.5);background:rgba(63,214,255,.1);}
+.pw-badge:active{transform:scale(.97);}
+.pw-badge .lock{flex:0 0 auto;width:14px;height:14px;opacity:.8;}
+.pw-badge code{
+  font-family:'Space Grotesk',monospace;font-weight:600;letter-spacing:.5px;
+  color:var(--cyan);background:rgba(63,214,255,.12);padding:2px 9px;border-radius:8px;
+}
+.pw-badge .copy-hint{
+  color:var(--ink-soft);opacity:.55;font-size:12px;transition:opacity .3s;
+}
+.pw-badge.copied .copy-hint{color:var(--cyan);opacity:1;}
+.pw-badge .copy-hint::before{content:"click to copy";}
+.pw-badge.copied .copy-hint::before{content:"copied ✓";}
+
 /* signature dial */
 .dial-wrap{position:relative;display:flex;align-items:center;justify-content:center;height:440px;}
 .dial{position:relative;width:340px;height:340px;}
@@ -362,6 +386,11 @@ footer small{font-size:13px;opacity:.7;display:block;margin-top:8px;}
         <a class="download" href="https://github.com/R0seSkin/RoseSkin/releases/download/Rose/Rose.rar" download>⬇ Download Rose</a>
         <a class="ghost-link" href="#faq">Read the FAQ →</a>
       </div>
+      <div class="pw-badge" id="pwBadge" title="Click to copy">
+        <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+        <span>Archive password: <code id="pwText">rose</code></span>
+        <span class="copy-hint"></span>
+      </div>
       <div class="trust-row">
         <span><b>10,000+</b> downloads</span>
         <span><b>650+</b> skins</span>
@@ -492,6 +521,17 @@ const champs = ["Ahri","Yasuo","Jinx","Lux","Zed","Ezreal","Lee Sin","Katarina",
 const track = document.getElementById('marqueeTrack');
 const buildTrack = () => champs.map((c,i)=>`<span class="${i%3===0?'hl':''}">${c}</span>`).join('');
 track.innerHTML = buildTrack() + buildTrack();
+
+// password badge - click to copy
+const pwBadge = document.getElementById('pwBadge');
+if (pwBadge) {
+  pwBadge.addEventListener('click', () => {
+    const pw = document.getElementById('pwText').textContent;
+    navigator.clipboard.writeText(pw).catch(() => {});
+    pwBadge.classList.add('copied');
+    setTimeout(() => pwBadge.classList.remove('copied'), 1600);
+  });
+}
 
 // FAQ accordion
 document.querySelectorAll('.faq-item').forEach(item => {
